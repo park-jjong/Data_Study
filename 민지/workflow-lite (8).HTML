@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow Lite</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    input:focus, button:focus {
+      outline: none;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+  <div class="flex flex-col md:flex-row h-screen">
+    <!-- Sidebar -->
+    <aside class="bg-white w-full md:w-64 p-6 shadow-md border-r">
+      <h1 class="text-2xl font-bold mb-6 text-blue-600">📋 Workflow Lite</h1>
+      <nav class="space-y-2">
+        <button class="w-full text-left text-gray-700 hover:text-blue-600">전체 보기</button>
+        <button class="w-full text-left text-gray-700 hover:text-blue-600">진행중</button>
+        <button class="w-full text-left text-gray-700 hover:text-blue-600">완료</button>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 p-8 overflow-y-auto">
+      <section class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800">새 업무 추가</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <input type="text" id="task-title" placeholder="업무 제목" class="p-2 border rounded">
+          <input type="date" id="task-date" class="p-2 border rounded">
+          <input type="text" id="task-desc" placeholder="설명" class="p-2 border rounded">
+          <button onclick="addTask()" class="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600">추가</button>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold mb-4 text-gray-800">업무 목록</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="task-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let tasks = [];
+
+    function saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function loadTasks() {
+      const saved = localStorage.getItem("tasks");
+      if (saved) {
+        tasks = JSON.parse(saved);
+        refreshTaskList();
+      }
+    }
+
+    function createEditableSpan(text, key, task) {
+      const span = document.createElement("span");
+      span.textContent = text;
+      span.className = "editable block text-sm text-gray-800 cursor-pointer mb-1";
+      span.onclick = function () {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = text;
+        input.className = "p-1 border rounded w-full text-sm";
+        input.onkeydown = function (e) {
+          if (e.key === "Enter") {
+            task[key] = input.value;
+            saveTasks();
+            refreshTaskList();
+          }
+        };
+        span.replaceWith(input);
+        input.focus();
+      };
+      return span;
+    }
+
+    function renderTask(task) {
+      const card = document.createElement("div");
+      card.className = "bg-white rounded-xl shadow p-5 hover:shadow-lg transition border border-gray-200";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = task.status === "complete";
+      checkbox.className = "mr-2 align-middle";
+      checkbox.onchange = () => {
+        task.status = checkbox.checked ? "complete" : "on-going";
+        saveTasks();
+        refreshTaskList();
+      };
+
+      const titleSpan = createEditableSpan("🛠 " + task.title, "title", task);
+      const dateSpan = createEditableSpan("📅 " + task.date, "date", task);
+      const descSpan = createEditableSpan("📝 " + task.desc, "desc", task);
+
+      const statusBadge = document.createElement("span");
+      statusBadge.className = task.status === "complete" ? "bg-green-100 text-green-700 text-xs px-2 py-1 rounded" : "bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded";
+      statusBadge.textContent = task.status;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "삭제";
+      deleteBtn.className = "text-red-500 text-sm mt-2 hover:underline float-right";
+      deleteBtn.onclick = () => {
+        tasks = tasks.filter(t => t !== task);
+        saveTasks();
+        refreshTaskList();
+      };
+
+      card.appendChild(checkbox);
+      card.appendChild(titleSpan);
+      card.appendChild(dateSpan);
+      card.appendChild(descSpan);
+      card.appendChild(statusBadge);
+      card.appendChild(deleteBtn);
+
+      document.getElementById("task-list").appendChild(card);
+    }
+
+    function refreshTaskList() {
+      document.getElementById("task-list").innerHTML = "";
+      tasks.forEach(task => renderTask(task));
+    }
+
+    function addTask() {
+      const title = document.getElementById("task-title").value.trim();
+      const date = document.getElementById("task-date").value;
+      const desc = document.getElementById("task-desc").value.trim();
+
+      if (!title || !date || !desc) {
+        alert("모든 항목을 입력해주세요.");
+        return;
+      }
+
+      const newTask = { title, date, desc, status: "on-going" };
+      tasks.push(newTask);
+      saveTasks();
+      refreshTaskList();
+
+      document.getElementById("task-title").value = "";
+      document.getElementById("task-date").value = "";
+      document.getElementById("task-desc").value = "";
+    }
+
+    window.onload = loadTasks;
+  </script>
+</body>
+</html>
