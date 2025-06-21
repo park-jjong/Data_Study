@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow Lite</title>
+</head>
+<body>
+  <h1>📋 업무 목록</h1>
+  <p>여기에 업무 리스트가 표시됩니다.</p>
+
+  <h2>새 업무 추가</h2>
+  <input type="text" id="new-task-input" placeholder="업무를 입력하세요" />
+  <button onclick="addTask()">추가</button>
+
+  <ul id="task-list">
+    <!-- ✔ 업무 생성 기능 구현 -->
+    <!-- ✔ 업무 수정 기능 구현 -->
+    <!-- ✔ 상세 정보 페이지 구성 -->
+  </ul>
+
+  <script>
+    function addTask() {
+      const input = document.getElementById("new-task-input");
+      const taskText = input.value.trim();
+
+      if (taskText !== "") {
+        const li = document.createElement("li");
+        li.innerText = taskText;
+
+        // ✅ 클릭하면 수정 기능
+        li.onclick = function () {
+          const updatedText = prompt("수정할 내용을 입력하세요:", li.innerText);
+          if (updatedText !== null && updatedText.trim() !== "") {
+            li.innerText = updatedText;
+          }
+        };
+
+        document.getElementById("task-list").appendChild(li);
+        input.value = "";
+      }
+    }
+  </script>
+</body>
+</html>

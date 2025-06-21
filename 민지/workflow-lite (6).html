@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow Lite</title>
+</head>
+<body>
+  <h1>📋 업무 목록</h1>
+  <p>업무 제목, 날짜, 설명을 입력하세요.</p>
+
+  <h2>새 업무 추가</h2>
+  <input type="text" id="task-title" placeholder="업무 제목" />
+  <input type="date" id="task-date" />
+  <input type="text" id="task-desc" placeholder="설명" />
+  <button onclick="addTask()">추가</button>
+
+  <ul id="task-list">
+    <!-- ✔ 업무 생성 기능 구현 -->
+    <!-- ✔ 업무 수정 기능 구현 -->
+    <!-- ✔ 상세 정보 표시 기능 -->
+  </ul>
+
+  <script>
+    function addTask() {
+      const title = document.getElementById("task-title").value.trim();
+      const date = document.getElementById("task-date").value;
+      const desc = document.getElementById("task-desc").value.trim();
+
+      if (title === "" || date === "" || desc === "") {
+        alert("모든 항목을 입력해주세요.");
+        return;
+      }
+
+      const li = document.createElement("li");
+
+      // HTML 표시
+      li.innerHTML = `<strong>🛠 ${title}</strong><br>📅 ${date}<br>📝 ${desc}`;
+
+      // 데이터 보관
+      li.dataset.title = title;
+      li.dataset.date = date;
+      li.dataset.desc = desc;
+
+      // 클릭 시 수정 기능
+      li.onclick = function () {
+        const newTitle = prompt("업무 제목 수정:", li.dataset.title);
+        const newDate = prompt("날짜 수정 (예: 2025-06-10):", li.dataset.date);
+        const newDesc = prompt("설명 수정:", li.dataset.desc);
+
+        if (newTitle && newDate && newDesc) {
+          li.dataset.title = newTitle;
+          li.dataset.date = newDate;
+          li.dataset.desc = newDesc;
+
+          li.innerHTML = `<strong>🛠 ${newTitle}</strong><br>📅 ${newDate}<br>📝 ${newDesc}`;
+        }
+      };
+
+      document.getElementById("task-list").appendChild(li);
+
+      // 입력칸 초기화
+      document.getElementById("task-title").value = "";
+      document.getElementById("task-date").value = "";
+      document.getElementById("task-desc").value = "";
+    }
+  </script>
+</body>
+</html>
