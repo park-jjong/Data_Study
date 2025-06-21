@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow Lite</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      margin: 40px;
+    }
+
+    h1 {
+      font-size: 2em;
+    }
+
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .filter-group {
+      margin: 20px 0;
+    }
+
+    .filter-group button {
+      background: #007BFF;
+      margin-right: 10px;
+    }
+
+    .filter-group button.active {
+      background: #0056b3;
+    }
+
+    ul#task-list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    li.task-item {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      width: 250px;
+      position: relative;
+    }
+
+    li.completed {
+      background-color: #e0ffe0;
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    .status-label {
+      font-size: 0.8em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 5px;
+      display: inline-block;
+    }
+
+    .status-ongoing {
+      background-color: #f0ad4e;
+      color: white;
+    }
+
+    .status-complete {
+      background-color: #5cb85c;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>📋 Workflow Lite</h1>
+
+  <div class="input-group">
+    <input type="text" id="task-title" placeholder="업무 제목" />
+    <input type="date" id="task-date" />
+    <input type="text" id="task-desc" placeholder="설명" />
+    <button onclick="addTask()">추가</button>
+  </div>
+
+  <div class="filter-group">
+    <button onclick="setFilter('all')" id="filter-all" class="active">전체</button>
+    <button onclick="setFilter('on-going')" id="filter-ongoing">진행중</button>
+    <button onclick="setFilter('complete')" id="filter-complete">완료</button>
+  </div>
+
+  <ul id="task-list"></ul>
+
+  <script>
+    let tasks = [];
+    let currentFilter = "all";
+
+    function saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function loadTasks() {
+      const saved = localStorage.getItem("tasks");
+      if (saved) {
+        tasks = JSON.parse(saved);
+        refreshTaskList();
+      }
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      refreshTaskList();
+
+      // 버튼 스타일 바꾸기
+      document.querySelectorAll(".filter-group button").forEach(btn => btn.classList.remove("active"));
+      document.getElementById("filter-" + (filter === "all" ? "all" : filter)).classList.add("active");
+    }
+
+    function renderTask(task) {
+      if (currentFilter !== "all" && task.status !== currentFilter) return;
+
+      const li = document.createElement("li");
+      li.className = "task-item";
+      if (task.status === "complete") li.classList.add("completed");
+
+      const statusSpan = document.createElement("span");
+      statusSpan.className = "status-label " + (task.status === "complete" ? "status-complete" : "status-ongoing");
+      statusSpan.textContent = task.status;
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = task.status === "complete";
+      checkbox.onchange = () => {
+        task.status = checkbox.checked ? "complete" : "on-going";
+        saveTasks();
+        refreshTaskList();
+      };
+
+      const content = document.createElement("div");
+      content.innerHTML = `
+        <strong>🛠 ${task.title}</strong><br>
+        📅 ${task.date}<br>
+        📝 ${task.desc}
+      `;
+      content.onclick = () => {
+        const newTitle = prompt("업무 제목:", task.title);
+        const newDate = prompt("날짜:", task.date);
+        const newDesc = prompt("설명:", task.desc);
+        if (newTitle && newDate && newDesc) {
+          task.title = newTitle;
+          task.date = newDate;
+          task.desc = newDesc;
+          saveTasks();
+          refreshTaskList();
+        }
+      };
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "delete-btn";
+      delBtn.textContent = "삭제";
+      delBtn.onclick = () => {
+        tasks = tasks.filter(t => t !== task);
+        saveTasks();
+        refreshTaskList();
+      };
+
+      li.appendChild(checkbox);
+      li.appendChild(content);
+      li.appendChild(statusSpan);
+      li.appendChild(delBtn);
+
+      document.getElementById("task-list").appendChild(li);
+    }
+
+    function refreshTaskList() {
+      document.getElementById("task-list").innerHTML = "";
+      tasks.forEach(task => renderTask(task));
+    }
+
+    function addTask() {
+      const title = document.getElementById("task-title").value.trim();
+      const date = document.getElementById("task-date").value;
+      const desc = document.getElementById("task-desc").value.trim();
+
+      if (!title || !date || !desc) {
+        alert("모든 항목을 입력해주세요.");
+        return;
+      }
+
+      const newTask = { title, date, desc, status: "on-going" };
+      tasks.push(newTask);
+      saveTasks();
+      refreshTaskList();
+
+      document.getElementById("task-title").value = "";
+      document.getElementById("task-date").value = "";
+      document.getElementById("task-desc").value = "";
+    }
+
+    window.onload = loadTasks;
+  </script>
+</body>
+</html>
+

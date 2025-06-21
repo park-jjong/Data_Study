@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow Lite</title>
+</head>
+<body>
+  <h1>📋 업무 목록</h1>
+  <p>업무 제목, 날짜, 설명을 입력하세요.</p>
+
+  <h2>새 업무 추가</h2>
+  <input type="text" id="task-title" placeholder="업무 제목" />
+  <input type="date" id="task-date" />
+  <input type="text" id="task-desc" placeholder="설명" />
+  <button onclick="addTask()">추가</button>
+
+  <ul id="task-list">
+    <!-- 업무 항목이 여기에 표시됩니다 -->
+  </ul>
+
+  <script>
+    function addTask() {
+      const title = document.getElementById("task-title").value.trim();
+      const date = document.getElementById("task-date").value;
+      const desc = document.getElementById("task-desc").value.trim();
+
+      if (title === "" || date === "" || desc === "") {
+        alert("모든 항목을 입력해주세요.");
+        return;
+      }
+
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>🛠 ${title}</strong><br>📅 ${date}<br>📝 ${desc}`;
+
+      // 수정 기능: 클릭 시 수정 가능
+      li.onclick = function () {
+        const newTitle = prompt("업무 제목 수정:", title);
+        const newDate = prompt("날짜 수정 (예: 2025-06-10):", date);
+        const newDesc = prompt("설명 수정:", desc);
+
+        if (newTitle && newDate && newDesc) {
+          li.innerHTML = `<strong>🛠 ${newTitle}</stro
