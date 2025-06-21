@@ -1,0 +1,4 @@
+﻿질문,정답,해설
+None == False는 True이다.,X,None과 False는 값이 다릅니다. None == False → False
+def func(x=[]) 처럼 mutable 객체를 기본 인자로 사용해도 안전하다.,X,"기본 인자는 함수 정의 시 한 번만 평가되므로, 리스트가 공유됩니다.
+예: def f(x=[]): x.append(1); return x → 계속 누적됨"
